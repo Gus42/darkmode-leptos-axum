@@ -1,9 +1,9 @@
+use crate::dark_mode::{DarkModeToggle, ToggleDarkMode};
 use crate::error_template::{AppError, ErrorTemplate};
+use leptos::logging::log;
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
-use crate::dark_mode::{DarkModeToggle, ToggleDarkMode};
-use leptos::logging::log;
 
 // Helper to register all our server functions, if we're in SSR mode
 /* #[cfg(feature = "ssr")]
@@ -19,7 +19,7 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/dark-theme-axum.css"/>   
+        <Stylesheet id="leptos" href="/pkg/dark-theme-axum.css"/>
 
         // sets the document title
         <Title text="Welcome to Leptos"/>
@@ -48,7 +48,7 @@ fn HomePage() -> impl IntoView {
     let on_click = move |_| set_count.update(|count| *count += 1);
 
     view! {
-        <DarkModeToggle prefers_dark_default=true/>
+        <DarkModeToggle/>
         <h1>"Welcome to Leptos!"</h1>
         <button on:click=on_click>"Click Me: " {count}</button>
     }
