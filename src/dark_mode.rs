@@ -61,7 +61,7 @@ fn initial_prefers_dark() -> bool {
                 _ => false,
             })
         })
-        .unwrap_or(false)
+        .unwrap_or(true)
 }
 
 #[component]
