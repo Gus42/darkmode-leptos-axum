@@ -22,7 +22,7 @@ pub async fn toggle_dark_mode(prefers_dark: bool) -> Result<bool, ServerFnError>
     );
     response_parts.headers = headers;
 
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    //std::thread::sleep(std::time::Duration::from_secs(1));
 
     response.overwrite(response_parts); //.await ???
     Ok(prefers_dark)
@@ -30,7 +30,8 @@ pub async fn toggle_dark_mode(prefers_dark: bool) -> Result<bool, ServerFnError>
 
 // this macro means something like: this is only for the client
 #[cfg(not(feature = "ssr"))]
-fn initial_prefers_dark(prefers_dark_default: bool) -> bool {
+//#[cfg(feature = "ssr")]
+fn initial_prefers_dark() -> bool {
     log!("Inside initial pref not ssr");
     use wasm_bindgen::JsCast;
 
@@ -39,7 +40,7 @@ fn initial_prefers_dark(prefers_dark_default: bool) -> bool {
     if cookie.contains("darkmode") {
         cookie.contains("darkmode=true")
     } else {
-        prefers_dark_default == true
+        true
     }
 }
 
@@ -48,17 +49,16 @@ fn initial_prefers_dark(prefers_dark_default: bool) -> bool {
 // In fact RequestParts does not exists anymore inside leptos_axum.
 // We just use http::request::Parts whose now implements Clone.
 #[cfg(feature = "ssr")]
-fn initial_prefers_dark(prefers_dark_default: bool) -> bool {
+fn initial_prefers_dark() -> bool {
     log!("Inside initial pref ssr");
     use axum_extra::extract::cookie::CookieJar;
     use http::request::Parts; 
     use_context::<Parts>()
         .and_then(|req| {
             let cookies = CookieJar::from_headers(&req.headers);
-            cookies.get("darkmode").and_then(|v| match v.value() {
-                "true" => Some(true),
-                "false" => Some(false),
-                _ => Some(prefers_dark_default),
+            cookies.get("darkmode").map(|v| match v.value() {
+                "true" => true,
+                _ => false,
             })
         })
         .unwrap_or(false)
@@ -66,13 +66,10 @@ fn initial_prefers_dark(prefers_dark_default: bool) -> bool {
 
 #[component]
 pub fn DarkModeToggle(
-    /// Whether the component should initially prefer dark mode
-    #[prop(optional)]
-    prefers_dark_default: bool
 ) -> impl IntoView {
     log!("Inside DarkModeToggle");
 
-    let initial = initial_prefers_dark(prefers_dark_default);
+    let initial = initial_prefers_dark();
 
     let toggle_dark_mode_action = create_server_action::<ToggleDarkMode>();
 
@@ -106,25 +103,23 @@ pub fn DarkModeToggle(
     view! {
         <Meta name="color-scheme" content=color_scheme/>
         <ActionForm action=toggle_dark_mode_action>
-            <input 
-                type="hidden" 
-                name="prefers_dark" 
+            <input
+                type="hidden"
+                name="prefers_dark"
                 value=move || {
                     log!("Inside the hidden input");
                     (!prefers_dark()).to_string()
                 }
             />
-            <input 
-                type="submit" 
+
+            <input
+                type="submit"
                 value=move || {
                     log!("Inside the submit");
-                    if prefers_dark() {
-                        "Switch to Light Mode"
-                    } else {
-                        "Switch to Dark Mode"
-                    }
+                    if prefers_dark() { "Switch to Light Mode" } else { "Switch to Dark Mode" }
                 }
             />
+
         </ActionForm>
     }
 }
