@@ -27,6 +27,8 @@ console_log = "1.0.0"
 log = "0.4"
 
 [features]
+# I am not 100% sure this is needed but it is what I see in the examples and it works
+csr = ["leptos/csr", "leptos_meta/csr", "leptos_router/csr"]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = [
     "dep:axum",
